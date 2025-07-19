@@ -718,57 +718,61 @@ namespace ElectronicScale
                     ConfigInfo["printer"]["quality"]?.ToString() ?? "1"
                 ));
 
-            if (result)
-            {
-                string sql = $"INSERT INTO packing_scale VALUES('{LimitList[eeee]["apn"]}', '{LimitList[eeee]["apn"]};{now}', '{sn}', '{textBox7.Text}', '{datetime}');";
-                msdbWrite.InsertData(sql);
-            }
-            else
-            {
-                MessageBox.Show("打印标签时出错:\r\n反正就是错了", "错误提示:", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
             //if (result)
             //{
             //    string sql = $"INSERT INTO packing_scale VALUES('{LimitList[eeee]["apn"]}', '{LimitList[eeee]["apn"]};{now}', '{sn}', '{textBox7.Text}', '{datetime}');";
             //    msdbWrite.InsertData(sql);
-
-            //    DateTime currentDate = DateTime.Now;
-            //    if (currentDate.Date == DateTime.Now.Date)
-            //    {
-            //        MsSQLDB msdb1 = new MsSQLDB($"Server={ConfigInfo["mssql"]["host"]};Database={ConfigInfo["mssql"]["database"]};User Id={ConfigInfo["mssql"]["user"]};Password={ConfigInfo["mssql"]["password"]};Trusted_Connection=True;integrated security=False");
-            //        MsSQLDB msdb2 = new MsSQLDB($"Server={ConfigInfo["mssql1"]["host"]};Database={ConfigInfo["mssql1"]["database"]};User Id={ConfigInfo["mssql1"]["user"]};Password={ConfigInfo["mssql1"]["password"]};Trusted_Connection=True;integrated security=False");
-
-            //        try
-            //        {
-            //            string backupSql1 = $"SELECT * INTO msdt_backup_{DateTime.Now:yyyyMMdd} FROM msdt";
-            //            msdb1.InsertData(backupSql1);
-            //            string deleteSql1 = "DELETE FROM msdt";
-            //            msdb1.InsertData(deleteSql1);
-            //            label12.Text = "Đã xóa bảng msdt trên cơ sở dữ liệu mssql.";
-
-            //            string backupSql2 = $"SELECT * INTO msdt_backup_{DateTime.Now:yyyyMMdd} FROM msdt";
-            //            msdb2.InsertData(backupSql2);
-            //            string deleteSql2 = "DELETE FROM msdt";
-            //            msdb2.InsertData(deleteSql2);
-            //            label12.Text += "\nĐã xóa bảng msdt trên cơ sở dữ liệu mssql1.";
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            MessageBox.Show($"Lỗi khi xóa bảng msdt: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        label12.Text = "Hôm nay không phải ngày kiểm tra. Không xóa bảng msdt.";
-            //    }
             //}
             //else
             //{
             //    MessageBox.Show("打印标签时出错:\r\n反正就是错了", "错误提示:", MessageBoxButtons.OK, MessageBoxIcon.Error);
             //    return;
             //}
+
+            if (result)
+            {
+                string sql = $"INSERT INTO packing_scale VALUES('{LimitList[eeee]["apn"]}', '{LimitList[eeee]["apn"]};{now}', '{sn}', '{textBox7.Text}', '{datetime}');";
+                msdbWrite.InsertData(sql);
+                // Chọn ngày để xóa bảng msdt
+                DateTime currentDate = DateTime.Now;
+                DateTime nextMonth19 = new DateTime(currentDate.Year, currentDate.Month, 1).AddMonths(1).AddDays(18);
+                if (currentDate.Date == nextMonth19.Date)
+                {
+                    MsSQLDB msdb1 = new MsSQLDB($"Server={ConfigInfo["mssql"]["host"]};Database={ConfigInfo["mssql"]["database"]};User Id={ConfigInfo["mssql"]["user"]};Password={ConfigInfo["mssql"]["password"]};Trusted_Connection=True;integrated security=False");
+                    MsSQLDB msdb2 = new MsSQLDB($"Server={ConfigInfo["mssql1"]["host"]};Database={ConfigInfo["mssql1"]["database"]};User Id={ConfigInfo["mssql1"]["user"]};Password={ConfigInfo["mssql1"]["password"]};Trusted_Connection=True;integrated security=False");
+
+                    try
+                    {
+                        string deleteSql1 = "DELETE FROM msdt";
+                        msdb1.InsertData(deleteSql1);
+                        string deleteSql2 = "DELETE FROM mazg";
+                        msdb1.InsertData(deleteSql2);
+                        string deleteSql3 = "DELETE FROM msta";
+                        msdb1.InsertData(deleteSql3);
+
+                        string deleteSql4 = "DELETE FROM msdt";
+                        msdb2.InsertData(deleteSql4);
+                        string deleteSql5 = "DELETE FROM mazg";
+                        msdb2.InsertData(deleteSql5);
+                        string deleteSql6 = "DELETE FROM msta";
+                        msdb2.InsertData(deleteSql6);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        //MessageBox.Show($"Lỗi khi xóa bảng msdt: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    
+                }
+            }
+            else
+            {
+                MessageBox.Show("打印标签时出错:\r\n反正就是错了", "错误提示:", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
             string bartenderFilePath = "F:\\称重标签.btw";
             FileToBarCodePrint(bartenderFilePath, "");
