@@ -1,0 +1,2 @@
+spec,weight,apn,datetime1,weight1,datetime
+豆灰NM,8.301,672-03079,250329133432,8.19,2025/03/29 13:34:32

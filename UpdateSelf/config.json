@@ -1,0 +1,6 @@
+{
+  "version": "0.0",
+  "updateurl": "http://192.168.161.202:8018/checkupdate/getVersion",
+  "name": "scale",
+  "exename": "ElectronicScale.exe"
+}

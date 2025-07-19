@@ -1,0 +1,48 @@
+{
+  "mysql": {
+    "host": "127.0.0.1",
+    "port": 3306,
+    "database": "test",
+    "user": "root",
+    "password": "root"
+  },
+  "mssql": {
+    "host": "10.2.100.213",
+    "port": 1433,
+    "database": "PMPMES",
+    "user": "sa",
+    "password": "PMPvn@0808"
+  },
+  "mssql1": {
+    "host": "10.2.101.28",
+    "port": 1433,
+    "database": "pmpmes",
+    "user": "sa",
+    "password": "FS@admin1028"
+  },
+  "scale": {
+    "port": "COM3",
+    "baudrate": 9600,
+    "compensation": 0.169
+  },
+  "alarm": {
+    "port": "COM5",
+    "baudrate": 38400,
+    "voicestatus": true,
+    "alarmupper": 0,
+    "alarmlower": 0
+  },
+  "fileinfo": {
+    "path": "",
+    "file": "xlsx"
+  },
+  "printer": {
+    "printer": "",
+    "ip": "10.2.163.26",
+    "quality": 1
+  },
+  "system": {
+    "version": "0.1",
+    "updateurl": "http://192.168.161.202:8011/checkupdate/getVersion"
+  }
+}
