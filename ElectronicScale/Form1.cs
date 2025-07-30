@@ -1,24 +1,27 @@
-﻿using ElectronicScale.Models;
+﻿using Azure;
+using BarTender;
+using ElectronicScale.Models;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Math;
+using System;
+using System.ComponentModel;
+using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO.Ports;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using thinger.DataConvertLib;
 using static Mysqlx.Crud.Order.Types;
-using BarTender;
-using BtApp = BarTender.Application;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using BtApp = BarTender.Application;
 using WinFormsTextBox = System.Windows.Forms.TextBox;
-using System.ComponentModel;
-using System;
-using System.Data;
 
 namespace ElectronicScale
 {
@@ -217,6 +220,7 @@ namespace ElectronicScale
                                     textBox9.ForeColor = Control.DefaultForeColor;
                                     textBox9.Text = $"";
                                     CleanText(true);
+
                                 }
                             }
                             // 框内有内容  在列表里 upper不等于空 超上限
@@ -361,10 +365,20 @@ namespace ElectronicScale
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            if (!isScanning && !string.IsNullOrEmpty(textBox1.Text) && !string.IsNullOrEmpty(textBox7.Text))
+            //if (!isScanning && !string.IsNullOrEmpty(textBox1.Text) && !string.IsNullOrEmpty(textBox7.Text))
+            //{
+            //    autoPrintTimer.Stop();
+            //    autoPrintTimer.Start();
+            //}
+            if (!isScanning && !string.IsNullOrEmpty(textBox1.Text))
             {
-                autoPrintTimer.Stop();
-                autoPrintTimer.Start();
+                string input = textBox1.Text.Trim();
+                if (input.Length >= 28 || input.EndsWith("\r") || input.EndsWith("\n"))
+                {
+                    isScanning = true;
+                    SendKeys.Send("{ENTER}");
+                    isScanning = false;
+                }
             }
         }
         private void ApnChanged(object sender, EventArgs e)
@@ -439,76 +453,6 @@ namespace ElectronicScale
             }
             result.Close();
         }
-        //private string GetEEEECode(string tbstring = "")
-        //{
-        //    /***
-        //     * 获取EEEE工程代码逻辑
-        //     * 两种情况:
-        //     * 1.二维码后7位
-        //     * 2.二维码12-18位
-        //     * 3.二维码 长度17位的,从12开始取4位
-        //     * **/
-        //    if (string.IsNullOrEmpty(tbstring))
-        //    {
-        //        if (string.IsNullOrEmpty(textBox1.Text))
-        //        {
-        //            CleanText(true, "Mã SN trống");
-        //            return "";
-        //        }
-        //        tbstring = textBox1.Text;
-        //    }
-        //    if (tbstring.Length != 28)
-        //    {
-        //        CleanText(true, $"Mã SN phải có đúng 28 ký tự, nhận được {tbstring.Length} ký tự");
-        //        return "";
-        //    }
-
-        //    string[] arr;
-        //    if (jiahao.IsMatch(tbstring))
-        //    {
-        //        arr = tbstring.Split('+');
-        //    }
-        //    else
-        //    {
-        //        arr = tbstring.Split(';');
-        //    }
-        //    string code = arr.Length >= 2? (arr[0].Length > arr[1].Length ? arr[0] : arr[1]): arr.Length == 1 ? arr[0] : "";
-
-        //    if (string.IsNullOrEmpty(code))
-        //    {
-        //        CleanText(true, "Không thể tách mã SN (dấu + hoặc ; không hợp lệ)");
-        //        return "";
-        //    }
-
-        //    switch (code.Length)
-        //    {
-        //        case 17:
-        //            string eeee17 = code.Substring(11, 4);
-        //            if (eeeeList.Contains(eeee17))
-        //            {
-        //                return eeee17;
-        //            }
-        //            CleanText(true, $"Mã EEEE ({eeee17}) chưa được cấu hình");
-        //            return "";
-        //        case 18:
-        //            string eeeeLast7 = code.Substring(code.Length - 7, 7);
-        //            string eeeeMid7 = code.Substring(11, 7);
-        //            if (eeeeList.Contains(eeeeLast7))
-        //            {
-        //                return eeeeLast7;
-        //            }
-        //            else if (eeeeList.Contains(eeeeMid7))
-        //            {
-        //                return eeeeMid7;
-        //            }
-        //            CleanText(true, $"Mã EEEE ({eeeeLast7} hoặc {eeeeMid7}) chưa được cấu hình");
-        //            return "";
-        //        default:
-        //            CleanText(true, $"Độ dài mã QR không hợp lệ ({code.Length} ký tự)");
-        //            return "";
-        //    }
-        //}
-
         private string GetEEEECode(string tbstring = "")
         {
             if (string.IsNullOrEmpty(tbstring))
@@ -535,7 +479,6 @@ namespace ElectronicScale
             label12.Text = $"Mã EEEE ({eeee}) chưa được cấu hình";
             return "";
         }
-
         private void button3_Click(object sender, EventArgs e)
         {
             Task.Run(() =>
@@ -630,6 +573,12 @@ namespace ElectronicScale
                         autoPrintTimer.Stop();
                         autoPrintTimer.Start();
                     }
+                    else
+                    {
+                        this.Activate();
+                        txtSN.SelectAll();
+                        txtSN.Focus();
+                    }
                     isScanning = false;
                 }
                 catch (Exception ex)
@@ -662,11 +611,12 @@ namespace ElectronicScale
                 //label13.Text = "";
                 label11.Text = lable11Text;
                 textBox1.Focus();
+                txtSN.Focus();
             });
         }
         private PrintTag printTag = new PrintTag();
         private void button1_Click(object sender, EventArgs e)
-            {
+        {
             string sn = textBox1.Text;
             string now = DateTime.Now.ToString("yyMMddHHmmss");
             string datetime = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
@@ -693,14 +643,14 @@ namespace ElectronicScale
             decimal lowerLimit = Convert.ToDecimal(LimitList[eeee]["lower"]);
             if (weight > upperLimit)
             {
-               
+
                 label13.Text = "Trọng lượng vượt quá giới hạn trên! Không thể in tem.";
                 label12.Text = "Vui lòng cân lại";
                 CleanText(true);
                 return;
             }
             if (weight < lowerLimit)
-            {          
+            {
                 label13.Text = "Trọng lượng không đủ! Không thể in tem.";
                 label12.Text = "Vui lòng cân lại";
                 CleanText(true);
@@ -718,55 +668,10 @@ namespace ElectronicScale
                     ConfigInfo["printer"]["quality"]?.ToString() ?? "1"
                 ));
 
-            //if (result)
-            //{
-            //    string sql = $"INSERT INTO packing_scale VALUES('{LimitList[eeee]["apn"]}', '{LimitList[eeee]["apn"]};{now}', '{sn}', '{textBox7.Text}', '{datetime}');";
-            //    msdbWrite.InsertData(sql);
-            //}
-            //else
-            //{
-            //    MessageBox.Show("打印标签时出错:\r\n反正就是错了", "错误提示:", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //    return;
-            //}
-
             if (result)
             {
                 string sql = $"INSERT INTO packing_scale VALUES('{LimitList[eeee]["apn"]}', '{LimitList[eeee]["apn"]};{now}', '{sn}', '{textBox7.Text}', '{datetime}');";
                 msdbWrite.InsertData(sql);
-                // Chọn ngày để xóa bảng msdt
-                DateTime currentDate = DateTime.Now;
-                DateTime nextMonth19 = new DateTime(currentDate.Year, currentDate.Month, 1).AddMonths(1).AddDays(18);
-                if (currentDate.Date == nextMonth19.Date)
-                {
-                    MsSQLDB msdb1 = new MsSQLDB($"Server={ConfigInfo["mssql"]["host"]};Database={ConfigInfo["mssql"]["database"]};User Id={ConfigInfo["mssql"]["user"]};Password={ConfigInfo["mssql"]["password"]};Trusted_Connection=True;integrated security=False");
-                    MsSQLDB msdb2 = new MsSQLDB($"Server={ConfigInfo["mssql1"]["host"]};Database={ConfigInfo["mssql1"]["database"]};User Id={ConfigInfo["mssql1"]["user"]};Password={ConfigInfo["mssql1"]["password"]};Trusted_Connection=True;integrated security=False");
-
-                    try
-                    {
-                        string deleteSql1 = "DELETE FROM msdt";
-                        msdb1.InsertData(deleteSql1);
-                        string deleteSql2 = "DELETE FROM mazg";
-                        msdb1.InsertData(deleteSql2);
-                        string deleteSql3 = "DELETE FROM msta";
-                        msdb1.InsertData(deleteSql3);
-
-                        string deleteSql4 = "DELETE FROM msdt";
-                        msdb2.InsertData(deleteSql4);
-                        string deleteSql5 = "DELETE FROM mazg";
-                        msdb2.InsertData(deleteSql5);
-                        string deleteSql6 = "DELETE FROM msta";
-                        msdb2.InsertData(deleteSql6);
-
-                    }
-                    catch (Exception ex)
-                    {
-                        //MessageBox.Show($"Lỗi khi xóa bảng msdt: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                else
-                {
-                    
-                }
             }
             else
             {
@@ -780,7 +685,14 @@ namespace ElectronicScale
             label13.Text = "Vui lòng đặt thùng mới lên cân";
             label12.Visible = true;
             CleanText(true);
+
+            this.Activate();
+            txtSN.SelectAll();
+
+
+            txtSN.Focus();
         }
+
         private void FileToBarCodePrint(string pFilePath, string printName)
         {
             if (btApp == null)
@@ -819,7 +731,7 @@ namespace ElectronicScale
                 File.WriteAllText(tagFilePath, csvContent, Encoding.UTF8);
                 if (string.IsNullOrEmpty(tagContext))
                 {
-                    tagContext = ""; 
+                    tagContext = "";
                     //"^XA^CI28^MD20^LL295^PW591^CW1,E:SIMSUN.FNT" +
                     //    $"^A1N,20,20^FO2,10,E:SIMSUN.FNT^FD{spec}^FS" +
                     //    $"^A1N,20,20^FO2,40,E:SIMSUN.FNT^FD实重:{weight}kg^FS" +
@@ -880,6 +792,238 @@ namespace ElectronicScale
         private void 已称重ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             weigh childForm = new weigh();
+            childForm.ShowDialog();
+        }
+
+        private void txtSN_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                e.Handled = true;
+                string input = txtSN.Text.Trim();
+                if (string.IsNullOrWhiteSpace(input))
+                {
+                    txtSN.SelectAll();
+                    txtSN.Focus();
+                    return;
+                }
+                if (!input.Contains(","))
+                {
+                    label13.Text = "Dữ liệu k hợp lệ";
+                    txtSN.SelectAll();
+                    txtSN.Focus();
+                    return;
+                }
+
+                string[] parts = input.Split(',');
+                string apn = parts[0];
+                string sn1 = apn;
+                string sn2 = parts.Length > 1 ? parts[1] : "";
+                string erweima = input;
+                string filePath = @"F:\packing_info.txt";
+                string header = "apn,color,spec,lag,nw,gw,sn1,sn2";
+                string data = "";
+                string color = "N/A";
+                string spec = "N/A";
+                string lag = "N/A";
+                string nw = "N/A";
+                string gw = "N/A";
+                DateTime createTime = DateTime.Now;
+
+                string connectionString;
+                try
+                {
+                    string configPath = Path.Combine(System.Windows.Forms.Application.StartupPath, "config.json");
+                    string jsonContent = File.ReadAllText(configPath);
+                    using (JsonDocument doc = JsonDocument.Parse(jsonContent))
+                    {
+                        JsonElement root = doc.RootElement;
+                        JsonElement mssql = root.GetProperty("mssql");
+                        string host = mssql.GetProperty("host").GetString();
+                        int port = mssql.GetProperty("port").GetInt32();
+                        string database = mssql.GetProperty("database").GetString();
+                        string user = mssql.GetProperty("user").GetString();
+                        string password = mssql.GetProperty("password").GetString();
+                        connectionString = $"Server={host},{port};Database={database};User Id={user};Password={password};";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi khi đọc file config.json: " + ex.Message, "Lỗi hệ thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    txtSN.SelectAll();
+                    txtSN.Focus();
+                    return;
+                }
+                try
+                {
+                    using (SqlConnection connection = new SqlConnection(connectionString))
+                    {
+                        connection.Open();
+                        string checkQuery = "SELECT TOP 1 1 FROM packing_carton_small WHERE erweima = @erweima";
+                        using (SqlCommand checkCommand = new SqlCommand(checkQuery, connection))
+                        {
+                            checkCommand.Parameters.AddWithValue("@erweima", erweima);
+                            bool exists = checkCommand.ExecuteScalar() != null;
+                            if (exists)
+                            {
+                                label21.Text = "Erweima đã tồn tại trong hệ thống vui lòng quét mã khác";
+                                BeginInvoke(() =>
+                                {
+                                    CleanText(true);
+                                    this.Activate();
+                                    textBox1.SelectAll();
+                                    textBox1.Focus();
+                                });
+                                return;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi khi kiểm tra mã SN trong cơ sở dữ liệu: " + ex.Message, "Lỗi hệ thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    BeginInvoke(() =>
+                    {
+                        CleanText(true);
+                        this.Activate();
+                        textBox1.SelectAll();
+                        textBox1.Focus();
+                    });
+                    return;
+                }
+
+                try
+                {
+                    using (SqlConnection connection = new SqlConnection(connectionString))
+                    {
+                        connection.Open();
+                        string query = "SELECT color, spec, lag, nw, gw FROM packing_info WHERE apn = @apn";
+                        using (SqlCommand command = new SqlCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue("@apn", apn);
+                            using (SqlDataReader reader = command.ExecuteReader())
+                            {
+                                if (reader.Read())
+                                {
+                                    txtAPN.Text = apn;
+                                    color = reader["color"].ToString();
+                                    spec = reader["spec"].ToString();
+                                    lag = reader["lag"].ToString();
+                                    nw = reader["nw"].ToString();
+                                    gw = reader["gw"].ToString();
+                                    txtcolor.Text = color;
+                                    txtspec.Text = spec;
+                                    txtlag.Text = lag;
+                                    txtnw.Text = nw;
+                                    txtgw.Text = gw;
+                                    data = string.Join(",", new string[] { apn, color, spec, lag, nw, gw, sn1, sn2 });
+                                }
+                            }
+                        }
+                        string insertQuery = "INSERT INTO packing_carton_small (apn, color, spec, lag, erweima, NW, GW, create_time) VALUES (@apn, @color, @spec, @lag, @erweima, @NW, @GW, @create_time)";
+                        using (SqlCommand insertCommand = new SqlCommand(insertQuery, connection))
+                        {
+                            insertCommand.Parameters.AddWithValue("@apn", apn);
+                            insertCommand.Parameters.AddWithValue("@color", color);
+                            insertCommand.Parameters.AddWithValue("@spec", spec);
+                            insertCommand.Parameters.AddWithValue("@lag", lag);
+                            insertCommand.Parameters.AddWithValue("@erweima", erweima);
+                            insertCommand.Parameters.AddWithValue("@NW", nw);
+                            insertCommand.Parameters.AddWithValue("@GW", gw);
+                            insertCommand.Parameters.AddWithValue("@create_time", createTime);
+                            insertCommand.ExecuteNonQuery();
+                        }
+                    }
+
+                    try
+                    {
+                        string logDirectory = Path.GetDirectoryName(filePath);
+                        if (!Directory.Exists(logDirectory))
+                        {
+                            Directory.CreateDirectory(logDirectory);
+                        }
+                        File.WriteAllText(filePath, header + Environment.NewLine + data + Environment.NewLine, Encoding.UTF8);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Lỗi khi ghi file F:\\packing_info.txt: " + ex.Message, "Lỗi hệ thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi kết nối cơ sở dữ liệu hoặc chèn dữ liệu: " + ex.Message, "Lỗi hệ thống", MessageBoxButtons.OK, MessageBoxIcon.Error);               
+                }
+
+                string bartenderFilePath = @"F:\packing_info.btw";
+                FileToBarCodePrint(bartenderFilePath, "");
+                CleanTxtSN(true);
+                this.Activate();
+                textBox1.SelectAll();
+                textBox1.Focus();
+            }
+        }
+
+        private void txtSN_TextChanged(object sender, EventArgs e)
+        {
+            //if (!isScanning && !string.IsNullOrEmpty(txtSN.Text))
+            //{
+            //    autoPrintTimer.Stop();
+            //    autoPrintTimer.Start();
+            //}
+            if (!isScanning && !string.IsNullOrEmpty(txtSN.Text))
+            {
+                string input = txtSN.Text.Trim();
+                if (input.Length >= 22 && input.Contains(","))
+                {
+                    isScanning = true;
+                    SendKeys.Send("{ENTER}");
+                    isScanning = false;
+                }
+            }
+        }
+
+        private void CleanTxtSN(bool tag = false)
+        {
+            BeginInvoke(() =>
+            {
+                //if (tag) textBox1.Text = "";
+                txtSN.Text = "";
+                txtspec.Text = "";
+                txtAPN.Text = "";
+                txtcolor.Text = "";
+                txtspec.Text = "";
+                txtlag.Text = "";
+                txtnw.Text = "";
+                txtgw.Text = "";
+                textBox1.Focus();
+            });
+        }
+
+        private void dayin_Click(object sender, EventArgs e)
+        {
+            string input = Interaction.InputBox("请输入管理密码", "不能随便改", "密码");
+            if (!string.IsNullOrEmpty(input))
+            {
+                string dt = DateTime.Now.ToString("HHmm");
+                if (input != DateTime.Now.ToString("HHmm"))
+                {
+                    MessageBox.Show("密码输入错误\r\n请重试", "密码错误:", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    PrintCarton printcarton = new();
+                    printcarton.ShowDialog();
+                }
+            }
+            else
+            {
+                MessageBox.Show("不输密码不得行", "密码错误:", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void search_Click(object sender, EventArgs e)
+        {
+            carton childForm = new carton();
             childForm.ShowDialog();
         }
     }

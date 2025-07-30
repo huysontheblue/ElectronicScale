@@ -1,14 +1,13 @@
-﻿using Microsoft.VisualBasic;
-using OfficeOpenXml;
+﻿using OfficeOpenXml;
 using System.Data.SqlClient;
 using Excel = OfficeOpenXml;
 
 namespace ElectronicScale
 {
-    public partial class weigh : Form
+    public partial class carton : Form
     {
         string connectionString = $"Server={Form1.ConfigInfo["mssql"]["host"]};Database={Form1.ConfigInfo["mssql"]["database"]}; User Id={Form1.ConfigInfo["mssql"]["user"]};Password={Form1.ConfigInfo["mssql"]["password"]};Trusted_Connection=True;integrated security=False";
-        public weigh()
+        public carton()
         {
             InitializeComponent();
         }
@@ -36,16 +35,15 @@ namespace ElectronicScale
         {
             try
             {
-                string query = @"SELECT pc.apn, pi.tag_product_name, pc.code AS '二维码', pc.sn, pc.weight AS '重量', pc.create_time AS '创建时间'
-                                FROM packing_scale pc JOIN packing_info pi ON pc.apn = pi.apn WHERE pc.apn = @apn";
-                if (fromDate != null)
-                {
-                    query += " AND create_time >= @fromDate";
-                }
-                if (toDate != null)
-                {
-                    query += " AND create_time <= @toDate";
-                }
+                string query = @"SELECT apn,color,spec,lag,erweima,NW,GW,create_time from packing_carton_small where apn = @apn";
+                //if (fromDate != null)
+                //{
+                //    query += " AND create_time >= @fromDate";
+                //}
+                //if (toDate != null)
+                //{
+                //    query += " AND create_time <= @toDate";
+                //}
 
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
@@ -78,8 +76,7 @@ namespace ElectronicScale
         {
             try
             {
-                string query = @"SELECT pc.apn,pi.tag_product_name ,pc.code AS '二维码',pc.sn ,pc.weight AS '重量',pc.create_time AS '创建时间'
-                                FROM packing_scale pc JOIN packing_info pi ON pc.apn = pi.apn where 1=1";
+                string query = @"SELECT apn,color,spec,lag,erweima,NW,GW,create_time from packing_carton_small where 1=1";
                 if (fromDate != null)
                 {
                     query += " AND create_time >= @fromDate";
@@ -140,12 +137,14 @@ namespace ElectronicScale
             dataGridView1.AutoGenerateColumns = false;
             dataGridView1.Columns.Clear();
             DataGridViewTextBoxColumn sttColumn = new DataGridViewTextBoxColumn(); sttColumn.Name = "STT"; sttColumn.HeaderText = "STT"; sttColumn.Width = 50; sttColumn.ReadOnly = true; dataGridView1.Columns.Insert(0, sttColumn);
-            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn() { Name = "apn", DataPropertyName = "apn", HeaderText = "apn", Width = 110, ReadOnly = true });
-            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn() { Name = "tag_product_name", DataPropertyName = "tag_product_name", HeaderText = "tag_product_name", Width = 170, ReadOnly = true, DefaultCellStyle = new DataGridViewCellStyle() { Alignment = DataGridViewContentAlignment.MiddleCenter } });
-            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn() { Name = "code", DataPropertyName = "二维码", HeaderText = "二维码", Width = 200, ReadOnly = true });
-            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn() { Name = "sn", DataPropertyName = "sn", HeaderText = "sn", Width = 300, ReadOnly = true });
-            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn() { Name = "weight", DataPropertyName = "重量", HeaderText = "重量", Width = 90, ReadOnly = true });
-            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn() { Name = "create_time", DataPropertyName = "创建时间", HeaderText = "创建时间", Width = 200, ReadOnly = true, DefaultCellStyle = new DataGridViewCellStyle() { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn() { Name = "apn", DataPropertyName = "apn", HeaderText = "apn", Width = 150, ReadOnly = true });
+            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn() { Name = "color", DataPropertyName = "color", HeaderText = "color", Width = 100, ReadOnly = true, DefaultCellStyle = new DataGridViewCellStyle() { Alignment = DataGridViewContentAlignment.MiddleCenter } });
+            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn() { Name = "spec", DataPropertyName = "spec", HeaderText = "spec", Width = 100, ReadOnly = true });
+            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn() { Name = "lag", DataPropertyName = "lag", HeaderText = "lag", Width = 100, ReadOnly = true });
+            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn() { Name = "erweima", DataPropertyName = "erweima", HeaderText = "erweima", Width = 300, ReadOnly = true });
+            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn() { Name = "NW", DataPropertyName = "NW", HeaderText = "NW", Width = 70, ReadOnly = true });
+            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn() { Name = "GW", DataPropertyName = "GW", HeaderText = "GW", Width = 70, ReadOnly = true });
+            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn() { Name = "create_time", DataPropertyName = "create_time", HeaderText = "create_time", Width = 200, ReadOnly = true, DefaultCellStyle = new DataGridViewCellStyle() { Alignment = DataGridViewContentAlignment.MiddleCenter } });
             UpdateRowNumbers();
             dataGridView1.EnableHeadersVisualStyles = false;
             dataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.LightBlue;
@@ -218,116 +217,104 @@ namespace ElectronicScale
             }
         }
 
-        private void dataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-        {
-            if (dataGridView1.Columns[e.ColumnIndex].Name == "weight" && e.Value != null && e.Value != DBNull.Value)
-            {
-                if (decimal.TryParse(e.Value.ToString(), out decimal weight))
-                {
-                    e.Value = $"{weight} KG";
-                    e.FormattingApplied = true;
-                }
-            }
-        }
+        //private void btnDelete_Click(object sender, EventArgs e)
+        //{
+        //    try
+        //    {
+        //        if (dataGridView1.SelectedRows.Count == 0)
+        //        {
+        //            MessageBox.Show("Vui lòng chọn ít nhất một dòng để xóa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        //            return;
+        //        }
+        //        string input = Interaction.InputBox("Mời nhập mật khẩu", "Nhập mật khẩu để xóa dữ liệu", "");
+        //        if (string.IsNullOrEmpty(input))
+        //        {
+        //            //MessageBox.Show("Mật khẩu không được để trống hoặc đã nhấn Cancel!", "密码错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //            return;
+        //        }
 
-        private void btnDelete_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (dataGridView1.SelectedRows.Count == 0)
-                {
-                    MessageBox.Show("Vui lòng chọn ít nhất một dòng để xóa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                string input = Interaction.InputBox("Mời nhập mật khẩu", "Nhập mật khẩu để xóa dữ liệu", "");
-                if (string.IsNullOrEmpty(input))
-                {
-                    //MessageBox.Show("Mật khẩu không được để trống hoặc đã nhấn Cancel!", "密码错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+        //        string dt = DateTime.Now.ToString("HHmm");
+        //        if (input != dt)
+        //        {
+        //            MessageBox.Show("Mật khẩu không đúng, vui lòng thử lại!\r\n请重试", "Mật khẩu sai", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //            return;
+        //        }
 
-                string dt = DateTime.Now.ToString("HHmm");
-                if (input != dt)
-                {
-                    MessageBox.Show("Mật khẩu không đúng, vui lòng thử lại!\r\n请重试", "Mật khẩu sai", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                if (MessageBox.Show("Bạn có chắc chắn muốn xóa?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
-                {
-                    return;
-                }
+        //        if (MessageBox.Show("Bạn có chắc chắn muốn xóa?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+        //        {
+        //            return;
+        //        }
 
 
-                using (SqlConnection connection = new SqlConnection(connectionString))
-                {
-                    connection.Open();
-                    using (SqlTransaction transaction = connection.BeginTransaction())
-                    {
-                        try
-                        {
-                            using (SqlCommand logCommand = new SqlCommand(
-                                @"INSERT INTO packing_scale_log (apn, code, sn, weight, create_time)
-                                VALUES (@apn, @code, @sn, @weight, @create_time)", connection, transaction))
-                            {
-                                using (SqlCommand deleteCommand = new SqlCommand(
-                                    "DELETE FROM packing_scale WHERE code = @code", connection, transaction))
-                                {
-                                    foreach (DataGridViewRow row in dataGridView1.SelectedRows)
-                                    {
-                                        if (!row.IsNewRow)
-                                        {
-                                            string code = row.Cells["code"].Value?.ToString();
-                                            if (!string.IsNullOrEmpty(code))
-                                            {
-                                                string apn = row.Cells["apn"].Value?.ToString();
-                                                string sn = row.Cells["sn"].Value?.ToString();
-                                                string weightStr = row.Cells["weight"].Value?.ToString().Replace(" KG", "");
-                                                decimal? weight = decimal.TryParse(weightStr, out decimal w) ? w : (decimal?)null;
-                                                DateTime? createTime = row.Cells["create_time"].Value != null
-                                                    ? Convert.ToDateTime(row.Cells["create_time"].Value) : (DateTime?)null;
+        //        using (SqlConnection connection = new SqlConnection(connectionString))
+        //        {
+        //            connection.Open();
+        //            using (SqlTransaction transaction = connection.BeginTransaction())
+        //            {
+        //                try
+        //                {
+        //                    using (SqlCommand logCommand = new SqlCommand(
+        //                        @"INSERT INTO packing_scale_log (apn, code, sn, weight, create_time)
+        //                        VALUES (@apn, @code, @sn, @weight, @create_time)", connection, transaction))
+        //                    {
+        //                        using (SqlCommand deleteCommand = new SqlCommand(
+        //                            "DELETE FROM packing_scale WHERE code = @code", connection, transaction))
+        //                        {
+        //                            foreach (DataGridViewRow row in dataGridView1.SelectedRows)
+        //                            {
+        //                                if (!row.IsNewRow)
+        //                                {
+        //                                    string code = row.Cells["code"].Value?.ToString();
+        //                                    if (!string.IsNullOrEmpty(code))
+        //                                    {
+        //                                        string apn = row.Cells["apn"].Value?.ToString();
+        //                                        string sn = row.Cells["sn"].Value?.ToString();
+        //                                        string weightStr = row.Cells["weight"].Value?.ToString().Replace(" KG", "");
+        //                                        decimal? weight = decimal.TryParse(weightStr, out decimal w) ? w : (decimal?)null;
+        //                                        DateTime? createTime = row.Cells["create_time"].Value != null
+        //                                            ? Convert.ToDateTime(row.Cells["create_time"].Value) : (DateTime?)null;
 
-                                                logCommand.Parameters.Clear();
-                                                logCommand.Parameters.AddWithValue("@apn", (object)apn ?? DBNull.Value);
-                                                logCommand.Parameters.AddWithValue("@code", code);
-                                                logCommand.Parameters.AddWithValue("@sn", (object)sn ?? DBNull.Value);
-                                                logCommand.Parameters.AddWithValue("@weight", (object)weight ?? DBNull.Value);
-                                                logCommand.Parameters.AddWithValue("@create_time", (object)createTime ?? DBNull.Value);
-                                                logCommand.ExecuteNonQuery();
+        //                                        logCommand.Parameters.Clear();
+        //                                        logCommand.Parameters.AddWithValue("@apn", (object)apn ?? DBNull.Value);
+        //                                        logCommand.Parameters.AddWithValue("@code", code);
+        //                                        logCommand.Parameters.AddWithValue("@sn", (object)sn ?? DBNull.Value);
+        //                                        logCommand.Parameters.AddWithValue("@weight", (object)weight ?? DBNull.Value);
+        //                                        logCommand.Parameters.AddWithValue("@create_time", (object)createTime ?? DBNull.Value);
+        //                                        logCommand.ExecuteNonQuery();
 
-                                                deleteCommand.Parameters.Clear();
-                                                deleteCommand.Parameters.AddWithValue("@code", code);
-                                                deleteCommand.ExecuteNonQuery();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            transaction.Commit();
-                        }
-                        catch
-                        {
-                            transaction.Rollback();
-                            throw;
-                        }
-                    }
-                }
+        //                                        deleteCommand.Parameters.Clear();
+        //                                        deleteCommand.Parameters.AddWithValue("@code", code);
+        //                                        deleteCommand.ExecuteNonQuery();
+        //                                    }
+        //                                }
+        //                            }
+        //                        }
+        //                    }
+        //                    transaction.Commit();
+        //                }
+        //                catch
+        //                {
+        //                    transaction.Rollback();
+        //                    throw;
+        //                }
+        //            }
+        //        }
 
-                if (string.IsNullOrEmpty(txtApn.Text))
-                {
-                    LoadAllData(date1.Value, date2.Value);
-                }
-                else
-                {
-                    LoadDataApn(date1.Value, date2.Value);
-                }
+        //        if (string.IsNullOrEmpty(txtApn.Text))
+        //        {
+        //            LoadAllData(date1.Value, date2.Value);
+        //        }
+        //        else
+        //        {
+        //            LoadDataApn(date1.Value, date2.Value);
+        //        }
 
-                MessageBox.Show("Xóa dữ liệu thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi khi xóa dữ liệu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+        //        MessageBox.Show("Xóa dữ liệu thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show("Lỗi khi xóa dữ liệu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //    }
+        //}
     }
 }
