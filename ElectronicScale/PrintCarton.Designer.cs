@@ -29,14 +29,15 @@
         private void InitializeComponent()
         {
             label1 = new Label();
-            textBox1 = new TextBox();
+            txtSN = new TextBox();
+            label2 = new Label();
             SuspendLayout();
             // 
             // label1
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Microsoft YaHei UI", 16F);
-            label1.Location = new Point(135, 29);
+            label1.Location = new Point(137, 18);
             label1.Margin = new Padding(2, 0, 2, 0);
             label1.Name = "label1";
             label1.Size = new Size(262, 41);
@@ -44,19 +45,30 @@
             label1.Text = "打印标签(In lại tem)";
             label1.UseCompatibleTextRendering = true;
             // 
-            // textBox1
+            // txtSN
             // 
-            textBox1.Location = new Point(31, 97);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(501, 27);
-            textBox1.TabIndex = 4;
+            txtSN.Location = new Point(30, 108);
+            txtSN.Name = "txtSN";
+            txtSN.Size = new Size(501, 27);
+            txtSN.TabIndex = 4;
+            txtSN.KeyPress += txtSN_KeyPress;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(30, 74);
+            label2.Name = "label2";
+            label2.Size = new Size(50, 20);
+            label2.TabIndex = 5;
+            label2.Text = "label2";
             // 
             // PrintCarton
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(568, 160);
-            Controls.Add(textBox1);
+            Controls.Add(label2);
+            Controls.Add(txtSN);
             Controls.Add(label1);
             Name = "PrintCarton";
             Text = "PrintCarton";
@@ -67,6 +79,7 @@
         #endregion
 
         private Label label1;
-        private TextBox textBox1;
+        private TextBox txtSN;
+        private Label label2;
     }
 }

@@ -670,7 +670,7 @@ namespace ElectronicScale
 
             if (result)
             {
-                string sql = $"INSERT INTO packing_scale VALUES('{LimitList[eeee]["apn"]}', '{LimitList[eeee]["apn"]};{now}', '{sn}', '{textBox7.Text}', '{datetime}');";
+                string sql = $"INSERT INTO packing_scale VALUES('{LimitList[eeee]["apn"]}', '{LimitList[eeee]["apn"]},{now}', '{sn}', '{textBox7.Text}', '{datetime}');";
                 msdbWrite.InsertData(sql);
             }
             else
@@ -679,7 +679,7 @@ namespace ElectronicScale
                 return;
             }
 
-            string bartenderFilePath = "F:\\称重标签.btw";
+            string bartenderFilePath = "D:\\称重标签.btw";
             FileToBarCodePrint(bartenderFilePath, "");
             label12.Text = "Mời in tiếp thùng mới";
             label13.Text = "Vui lòng đặt thùng mới lên cân";
@@ -723,7 +723,7 @@ namespace ElectronicScale
         {
             string csvContent = $"spec,weight,apn,datetime1,weight1,datetime\n{spec},{weight},{apn},{DateTime.Now:yyMMddHHmmss},{weight1},{DateTime.Now:yyyy/MM/dd HH:mm:ss}";
             //string tagFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tag.txt");
-            string tagFilePath = Path.Combine("F:", "tag.txt");
+            string tagFilePath = Path.Combine("D:", "tag.txt");
             File.WriteAllText(tagFilePath, csvContent);
 
             try
@@ -809,7 +809,7 @@ namespace ElectronicScale
                 }
                 if (!input.Contains(","))
                 {
-                    label13.Text = "Dữ liệu k hợp lệ";
+                    label21.Text = "Dữ liệu k hợp lệ";
                     txtSN.SelectAll();
                     txtSN.Focus();
                     return;
@@ -820,7 +820,7 @@ namespace ElectronicScale
                 string sn1 = apn;
                 string sn2 = parts.Length > 1 ? parts[1] : "";
                 string erweima = input;
-                string filePath = @"F:\packing_info.txt";
+                string filePath = @"D:\packing_info.txt";
                 string header = "apn,color,spec,lag,nw,gw,sn1,sn2";
                 string data = "";
                 string color = "N/A";
@@ -866,7 +866,8 @@ namespace ElectronicScale
                             bool exists = checkCommand.ExecuteScalar() != null;
                             if (exists)
                             {
-                                label21.Text = "Erweima đã tồn tại trong hệ thống vui lòng quét mã khác";
+                                label21.Text = "Erweima đã tồn tại trong hệ thống vui lòng xác nhận lại";
+                                txtSN.SelectAll();
                                 BeginInvoke(() =>
                                 {
                                     CleanText(true);
@@ -946,7 +947,7 @@ namespace ElectronicScale
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Lỗi khi ghi file F:\\packing_info.txt: " + ex.Message, "Lỗi hệ thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Lỗi khi ghi file D:\\packing_info.txt: " + ex.Message, "Lỗi hệ thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
                 catch (Exception ex)
@@ -954,12 +955,13 @@ namespace ElectronicScale
                     MessageBox.Show("Lỗi kết nối cơ sở dữ liệu hoặc chèn dữ liệu: " + ex.Message, "Lỗi hệ thống", MessageBoxButtons.OK, MessageBoxIcon.Error);               
                 }
 
-                string bartenderFilePath = @"F:\packing_info.btw";
+                string bartenderFilePath = @"D:\packing_info.btw";
                 FileToBarCodePrint(bartenderFilePath, "");
                 CleanTxtSN(true);
                 this.Activate();
-                textBox1.SelectAll();
+                //textBox1.SelectAll();
                 textBox1.Focus();
+                CleanText(true);
             }
         }
 
@@ -1001,23 +1003,30 @@ namespace ElectronicScale
 
         private void dayin_Click(object sender, EventArgs e)
         {
-            string input = Interaction.InputBox("请输入管理密码", "不能随便改", "密码");
-            if (!string.IsNullOrEmpty(input))
+            string[] passwords = new[] { "msah:a5b381cbffaa742db702d823dd5faaaa19c849a1",
+                                         "mmsah:1b474b33c1f5167beddeae3b1de1f41e58104a5a",
+                                         "msah:393e26d375b9f5df31f1ab6d233f9fb0d66901cb",
+                                         "msah:53b14a07b428cda389805f3f84741b38103dd845"};
+
+            while (true)
             {
-                string dt = DateTime.Now.ToString("HHmm");
-                if (input != DateTime.Now.ToString("HHmm"))
+                string input = Interaction.InputBox("请输入管理密码", "不能随便改");
+                if (string.IsNullOrEmpty(input))
+                {
+                    MessageBox.Show("不输密码不得行", "密码错误:", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
+                }
+                else if (!passwords.Contains(input))
                 {
                     MessageBox.Show("密码输入错误\r\n请重试", "密码错误:", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    continue;
                 }
                 else
                 {
                     PrintCarton printcarton = new();
                     printcarton.ShowDialog();
+                    break;
                 }
-            }
-            else
-            {
-                MessageBox.Show("不输密码不得行", "密码错误:", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

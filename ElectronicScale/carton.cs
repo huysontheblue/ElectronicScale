@@ -36,14 +36,14 @@ namespace ElectronicScale
             try
             {
                 string query = @"SELECT apn,color,spec,lag,erweima,NW,GW,create_time from packing_carton_small where apn = @apn";
-                //if (fromDate != null)
-                //{
-                //    query += " AND create_time >= @fromDate";
-                //}
-                //if (toDate != null)
-                //{
-                //    query += " AND create_time <= @toDate";
-                //}
+                if (fromDate != null)
+                {
+                    query += " AND create_time >= @fromDate";
+                }
+                if (toDate != null)
+                {
+                    query += " AND create_time <= @toDate";
+                }
 
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
