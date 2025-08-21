@@ -679,7 +679,7 @@ namespace ElectronicScale
                 return;
             }
 
-            string bartenderFilePath = "D:\\称重标签.btw";
+            string bartenderFilePath = "F:\\称重标签.btw";
             FileToBarCodePrint(bartenderFilePath, "");
             label12.Text = "Mời in tiếp thùng mới";
             label13.Text = "Vui lòng đặt thùng mới lên cân";
@@ -723,7 +723,7 @@ namespace ElectronicScale
         {
             string csvContent = $"spec,weight,apn,datetime1,weight1,datetime\n{spec},{weight},{apn},{DateTime.Now:yyMMddHHmmss},{weight1},{DateTime.Now:yyyy/MM/dd HH:mm:ss}";
             //string tagFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tag.txt");
-            string tagFilePath = Path.Combine("D:", "tag.txt");
+            string tagFilePath = Path.Combine("F:", "tag.txt");
             File.WriteAllText(tagFilePath, csvContent);
 
             try
@@ -820,7 +820,7 @@ namespace ElectronicScale
                 string sn1 = apn;
                 string sn2 = parts.Length > 1 ? parts[1] : "";
                 string erweima = input;
-                string filePath = @"D:\packing_info.txt";
+                string filePath = @"F:\packing_info.txt";
                 string header = "apn,color,spec,lag,nw,gw,sn1,sn2";
                 string data = "";
                 string color = "N/A";
@@ -947,7 +947,7 @@ namespace ElectronicScale
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Lỗi khi ghi file D:\\packing_info.txt: " + ex.Message, "Lỗi hệ thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Lỗi khi ghi file F:\\packing_info.txt: " + ex.Message, "Lỗi hệ thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
                 catch (Exception ex)
@@ -955,7 +955,7 @@ namespace ElectronicScale
                     MessageBox.Show("Lỗi kết nối cơ sở dữ liệu hoặc chèn dữ liệu: " + ex.Message, "Lỗi hệ thống", MessageBoxButtons.OK, MessageBoxIcon.Error);               
                 }
 
-                string bartenderFilePath = @"D:\packing_info.btw";
+                string bartenderFilePath = @"F:\packing_info.btw";
                 FileToBarCodePrint(bartenderFilePath, "");
                 CleanTxtSN(true);
                 this.Activate();
